@@ -1,45 +1,41 @@
 pipeline {
-    
-    agent { 
-        node{
-            label "dev"
-            
-        }
-    }
-    
-    stages{
-        stage("Clone Code"){
-            steps{
-                git url: "https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
-                echo "Aaj toh LinkedIn Post bannta hai boss"
-            }
-        }
-        stage("Build & Test"){
-            steps{
-                sh "docker build . -t notes-app-jenkins:latest"
-            }
-        }
-        stage("Push to DockerHub"){
-            steps{
-                withCredentials(
-                    [usernamePassword(
-                        credentialsId:"dockerCreds",
-                        passwordVariable:"dockerHubPass", 
-                        usernameVariable:"dockerHubUser"
-                        )
-                    ]
-                ){
-                sh "docker image tag notes-app-jenkins:latest ${env.dockerHubUser}/notes-app-jenkins:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/notes-app-jenkins:latest"
-                }
-            }
-        }
-        
-        stage("Deploy"){
-            steps{
-                sh "docker compose up -d"
-            }
-        }
-    }
+
+agent { label "dev"}
+
+stages{
+ stage("Code clone"){
+  steps{
+   git url : "https://github.com/ferozbasha9/django-notes-app.git", branch : "main"
+       }
+      }
+ stage("Build"){
+  steps{
+   sh "docker build . -t notesappimage-jenkins"
+       }
+ }
+ stage("Push to dockerhub"){
+  steps{
+   withCredentials(
+   [usernamePassword(
+   credentialsId:"dockerCreds",
+   passwordVariable:"dockerHubPass",
+   usernameVariable:"dockerHubUser"
+)
+]
+){
+sh "docker image tag notesappimage-jenkins ${env.dockerHubUser}/notesappimage-jenkins"
+sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+sh "docker push ${env.dockerHubUser}/notesappimage-jenkins"
 }
+}
+}
+ stage("Deploy"){
+  steps{
+   sh "docker compose up -d"
+       }
+      }
+ }
+}
+
+
+
